@@ -1,0 +1,21 @@
+{
+  "name": "hello_node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "tsc":"tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@opensea/stream-js": "^0.0.20",
+    "crypto-js": "^4.2.0",
+    "mysql": "^2.18.1",
+    "web3": "^4.3.0",
+    "ws": "^8.8.1"
+  }
+}
