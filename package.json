@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "tsc":"tsc",
+    "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +14,7 @@
   "dependencies": {
     "@opensea/stream-js": "^0.0.20",
     "crypto-js": "^4.2.0",
+    "log4js": "^6.9.1",
     "mysql": "^2.18.1",
     "web3": "^4.3.0",
     "ws": "^8.8.1"

@@ -10,11 +10,24 @@ const port = 8000;
 let web3 = new Web3("https://goerli.infura.io/v3/68f97f051e674f5a8ff25a1169f0682e");
 const requestListener = function (req, res) {
     res.setHeader("Content-Type", "application/json");
-    if(req.method === 'POST'){
+    if(req.method === 'GET'){
+        let _reqObj = url.parse(req.url,true);
+        let queryParams = _reqObj.query;
+        let pathname = _reqObj.pathname;
+        switch (pathname) {
+            case "/server/status":
+                res.writeHead(200);
+                res.end(JSON.stringify({code:0, error:"server available!"}));
+                break;
+            default:
+                res.writeHead(404);
+                res.end(JSON.stringify({error:"Resource not found"}));
+        }
+    } else if(req.method === 'POST'){
         let _reqObj = url.parse(req.url,false);
         let pathname = _reqObj.pathname;
         switch (pathname) {
-            case "/abi/decode/input":
+            case "/abi/decode/availableAdvancedOrders":
                 handleAbiDecodeInput(req, result => {
                     // console.log(result);
                     res.end(result);
@@ -31,7 +44,9 @@ const requestListener = function (req, res) {
 };
 function handleAbiDecodeInput(request, callback) {
     const JSON_URLENCODED = 'application/json';
-    if(request.headers['content-type'] === JSON_URLENCODED) {
+    let contentType = request.headers['content-type'];
+    // if(request.headers['content-type'] === JSON_URLENCODED) {
+    if(request.headers['content-type'].startsWith(JSON_URLENCODED)) {
         let body = '';
         request.on('data', chunk => {
             body += chunk.toString();
@@ -42,6 +57,7 @@ function handleAbiDecodeInput(request, callback) {
             try {
                 decodeSeaportRet = decodeSeaport(postBodyObj.input);
             } catch (error) {
+                console.log(new Date() + "parser error: " + JSON.stringify(body) + "\n -- " + error)
                 console.log(error);
                 decodeSeaportRet = JSON.stringify({code:1003, error:"seaport decode error!"});
             }
@@ -60,18 +76,31 @@ function decodeSeaport(inputData){
     let orderArray: any = decodedSecret['0'];
     for(let i = 0; i < orderArray.length; i++){
         let _order = orderArray[i];
+        let _orderParam = _order[0];
+
+        let orderAssets: object[] = [];
+        let _offerArray: any = _orderParam['2'];
+        for(let j = 0; j < _offerArray.length; j++){
+            let _offer = _offerArray[j];
+            let assetItem = {
+                "contractAddress": _offer.token,
+                "tokenId": _offer.identifierOrCriteria.toString()
+            }
+            orderAssets.push(assetItem);
+        }
+
         let order = {
-            "signature": _order.signature,
-            "extraData": _order.extraData
+            // "signature": _order.signature,
+            "extraData": _order.extraData,
+            "orderAssets": orderAssets
         }
         advancedOrders.push(order);
     }
 
-
     let result = {
         code:0,
         data: {
-            "advancedOrders": advancedOrders
+            "availableAdvancedOrders": advancedOrders
         }
     };
 
@@ -79,7 +108,7 @@ function decodeSeaport(inputData){
 }
 
 const server = http.createServer(requestListener);
-server.listen(port, host, () => {
+server.listen(port, () => {
     console.log(`Server is running on http://${host}:${port}`);
 });
 
